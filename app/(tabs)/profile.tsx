@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -78,18 +78,55 @@ export default function ProfileScreen() {
     const { session } = useAuth();
     const router = useRouter();
     const [loggingOut, setLoggingOut] = useState(false);
+    const [profileData, setProfileData] = useState<any>(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
 
     const email = session?.user?.email ?? '';
+    const userId = session?.user?.id ?? '';
+
+    useEffect(() => {
+        if (userId) {
+            fetchProfile();
+        } else {
+            setLoadingProfile(false);
+        }
+    }, [userId]);
+
+    const fetchProfile = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+            if (error) {
+                console.error('Error fetching profile:', error);
+            } else if (data) {
+                setProfileData(data);
+            }
+        } catch (error) {
+            console.error('Exception fetching profile:', error);
+        } finally {
+            setLoadingProfile(false);
+        }
+    };
+
     const emailPrefix = email.split('@')[0] ?? '';
     const initials = emailPrefix.slice(0, 2).toUpperCase();
-    const displayName = emailPrefix
-        .replace(/[._-]/g, ' ')
+
+    // Prefer full_name from db, otherwise fallback to email name
+    const rawDisplayName = profileData?.full_name || emailPrefix.replace(/[._-]/g, ' ');
+    const displayName = rawDisplayName
         .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
 
+    const phone = profileData?.phone || 'Not added';
+    const userType = profileData?.user_type ? profileData.user_type.charAt(0).toUpperCase() + profileData.user_type.slice(1) : 'Buyer';
+    const budget = profileData?.investment_budget ? `₹${profileData.investment_budget.toLocaleString()}` : 'Not set';
+    const riskTolerance = profileData?.risk_tolerance ? profileData.risk_tolerance.charAt(0).toUpperCase() + profileData.risk_tolerance.slice(1) : 'Not set';
+
     const isEmailVerified = session?.user?.email_confirmed_at != null;
-    const userId = session?.user?.id ?? '';
     const provider = session?.user?.app_metadata?.provider ?? 'email';
     const joinedDate = session?.user?.created_at
         ? new Date(session.user.created_at).toLocaleDateString('en-IN', {
@@ -122,7 +159,6 @@ export default function ProfileScreen() {
                 <View
                     style={{
                         height: 140,
-                        background: 'linear-gradient(135deg, #003b6f, #4f46e5)',
                         backgroundColor: '#003b6f',
                         borderBottomLeftRadius: 0,
                         borderBottomRightRadius: 0,
@@ -182,6 +218,7 @@ export default function ProfileScreen() {
                     {/* Edit + Logout buttons */}
                     <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
                         <TouchableOpacity
+                            onPress={() => router.push('/edit-profile' as any)}
                             style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
@@ -230,7 +267,12 @@ export default function ProfileScreen() {
                         <InfoRow
                             icon={<Ionicons name="call-outline" size={16} color="#2563eb" />}
                             label="Phone"
-                            value="Not added"
+                            value={phone}
+                        />
+                        <InfoRow
+                            icon={<Ionicons name="person-outline" size={16} color="#2563eb" />}
+                            label="User Type"
+                            value={userType}
                         />
                         <InfoRow
                             icon={<Ionicons name="location-outline" size={16} color="#2563eb" />}
@@ -315,6 +357,45 @@ export default function ProfileScreen() {
                                 Change Password
                             </Text>
                         </TouchableOpacity>
+                    </Card>
+
+                    {/* ── Investment Preferences Card ── */}
+                    <Card title="Investment Preferences">
+                        <TouchableOpacity
+                            onPress={() => router.push('/investment-preferences' as any)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: '#f0f9ff',
+                                borderRadius: 12,
+                                padding: 14,
+                                borderWidth: 1,
+                                borderColor: '#bae6fd',
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                <Ionicons name="options-outline" size={20} color="#0369a1" />
+                                <View>
+                                    <Text style={{ fontSize: 14, fontWeight: '700', color: '#111827' }}>Edit Preferences</Text>
+                                    <Text style={{ fontSize: 11, color: '#6b7280', marginTop: 1 }}>Budget, cities, property types</Text>
+                                </View>
+                            </View>
+                            <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+                        </TouchableOpacity>
+
+                        <View style={{ marginTop: 16 }}>
+                            <InfoRow
+                                icon={<Ionicons name="cash-outline" size={16} color="#2563eb" />}
+                                label="Investment Budget"
+                                value={budget}
+                            />
+                            <InfoRow
+                                icon={<Ionicons name="trending-up-outline" size={16} color="#2563eb" />}
+                                label="Risk Tolerance"
+                                value={riskTolerance}
+                            />
+                        </View>
                     </Card>
 
                     {/* ── Preferences Card ── */}

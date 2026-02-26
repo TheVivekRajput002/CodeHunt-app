@@ -38,7 +38,8 @@ export default function SignUpScreen() {
             if (error) {
                 router.push({ pathname: '/(auth)/auth-error', params: { message: error.message } });
             } else {
-                router.replace('/(auth)/check-email');
+                // Redirect to onboarding to collect preferences
+                router.replace('/onboarding' as any);
             }
         } catch (e) {
             router.push('/(auth)/auth-error');

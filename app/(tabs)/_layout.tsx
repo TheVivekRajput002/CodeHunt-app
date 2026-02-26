@@ -2,6 +2,23 @@ import { useEffect } from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/auth';
+import { View } from 'react-native';
+
+function TabBarBadge() {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: -2,
+        right: -4,
+        width: 7,
+        height: 7,
+        borderRadius: 4,
+        backgroundColor: '#ef4444',
+      }}
+    />
+  );
+}
 
 export default function TabLayout() {
   const { session, initialized } = useAuth();
@@ -43,20 +60,34 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="search"
         options={{
-          title: 'Explore',
+          title: 'Search',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="saved"
+        name="properties"
         options={{
-          title: 'Saved',
+          title: 'Properties',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="heart-outline" size={size} color={color} />
+            <View style={{ position: 'relative' }}>
+              <Ionicons name="business" size={size} color={color} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="agents"
+        options={{
+          title: 'AI Agents',
+          tabBarIcon: ({ color, size }) => (
+            <View style={{ position: 'relative' }}>
+              <Ionicons name="sparkles" size={size} color={color} />
+              <TabBarBadge />
+            </View>
           ),
         }}
       />
@@ -69,6 +100,10 @@ export default function TabLayout() {
           ),
         }}
       />
+      {/* Hide old tabs */}
+      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen name="saved" options={{ href: null }} />
+      <Tabs.Screen name="two" options={{ href: null }} />
     </Tabs>
   );
 }
