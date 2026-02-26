@@ -7,7 +7,6 @@ export default function TabLayout() {
   const { session, initialized } = useAuth();
   const router = useRouter();
 
-  // If user is not logged in, redirect to login
   useEffect(() => {
     if (initialized && !session) {
       router.replace('/(auth)/login');
@@ -22,12 +21,12 @@ export default function TabLayout() {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb',
-          height: 60,
-          paddingBottom: 8,
+          height: 62,
+          paddingBottom: 10,
           paddingTop: 8,
         },
         tabBarActiveTintColor: '#003b6f',
-        tabBarInactiveTintColor: '#6b7280',
+        tabBarInactiveTintColor: '#9ca3af',
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
@@ -40,6 +39,24 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="saved"
+        options={{
+          title: 'Saved',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart-outline" size={size} color={color} />
           ),
         }}
       />
